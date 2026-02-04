@@ -3,145 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi UPTD SMKN 1 Sumarorong</title>
+    <title>E-Absen UPTD SMKN 1 Sumarorong</title>
     <style>
         :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; --danger: #dc2626; }
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
-        .logo { width: 90px; margin-bottom: 15px; }
-        h2 { color: var(--primary); margin: 5px 0; font-size: 1.3rem; line-height: 1.2; }
-        h3 { color: #64748b; font-size: 0.8rem; margin-bottom: 20px; font-weight: 400; }
-        .status-box { padding: 15px; border-radius: 15px; margin-bottom: 20px; font-size: 0.85rem; font-weight: 600; line-height: 1.4; transition: 0.3s; }
+        .logo { width: 80px; margin-bottom: 10px; }
+        h2 { color: var(--primary); margin: 5px 0; font-size: 1.2rem; }
+        .status-box { padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
         .waiting { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
         .ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        input, select { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 1rem; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--accent); }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .btn { padding: 16px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem; opacity: 0.4; pointer-events: none; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { padding: 16px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; opacity: 0.3; pointer-events: none; transition: 0.3s; }
+        .active { opacity: 1; pointer-events: auto; }
         .btn-masuk { background: var(--accent); }
         .btn-pulang { background: var(--primary); }
-        .active { opacity: 1; pointer-events: auto; transform: scale(1); }
-        .active:active { transform: scale(0.95); }
-        .footer-text { font-size: 0.7rem; color: #94a3b8; margin-top: 25px; }
+        .footer { font-size: 0.7rem; color: #94a3b8; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo" alt="Logo">
-    <h2>E-ABSENSI GURU</h2>
-    <h3>UPTD SMKN 1 SUMARORONG</h3>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo">
+    <h2>ABSENSI DIGITAL</h2>
+    <p style="margin:0; font-size: 0.9rem; color: #64748b;">SMKN 1 SUMARORONG</p>
     
-    <div id="status-msg" class="status-box waiting">Memulai GPS...<br>Mohon tunggu sebentar</div>
+    <div id="status-msg" class="status-box waiting">Mencari Sinyal GPS...</div>
 
-    <input type="text" id="nama-guru" placeholder="Nama Lengkap & Gelar">
+    <input type="text" id="nama-guru" placeholder="Nama Lengkap">
     <select id="keterangan">
         <option value="Hadir">Hadir</option>
         <option value="Dinas Luar">Dinas Luar</option>
-        <option value="Izin/Sakit">Izin/Sakit</option>
+        <option value="Izin">Izin/Sakit</option>
     </select>
 
     <div class="btn-group">
-        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">ABSEN DATANG</button>
-        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">ABSEN PULANG</button>
+        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">DATANG</button>
+        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">PULANG</button>
     </div>
     
-    <p class="footer-text">Dusun Pasir Putih, Desa Rantekamase<br>Kabupaten Mamasa</p>
+    <div class="footer">Dusun Pasir Putih, Desa Rantekamase</div>
 </div>
 
 <script>
-    // --- KONFIGURASI LOKASI ---
-    const SCHOOL_COORDS = { lat: -3.13093, lng: 119.30720 }; 
-    const MAX_DISTANCE = 300; // Radius 300 Meter
-    // --------------------------
-
+    const SCHOOL_COORDS = { lat: -3.13125, lng: 119.30750 }; 
+    const MAX_DISTANCE = 400; 
     let userCoords = null;
 
-    function initGPS() {
+    function startTracking() {
         if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(successGPS, errorGPS, {
+            // Menggunakan watchPosition agar GPS terus diperbarui
+            navigator.geolocation.watchPosition(updatePos, handleError, {
                 enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 15000
+                maximumAge: 0
             });
         } else {
-            updateStatus("HP Tidak Mendukung GPS", "error");
+            alert("HP tidak mendukung GPS");
         }
     }
 
-    function successGPS(pos) {
+    function updatePos(pos) {
         userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const distance = calculateDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+        const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
         
-        const labelLokasi = `<br><small>Jarak Anda: ${Math.round(distance)} Meter</small>`;
-
-        if (distance <= MAX_DISTANCE) {
-            updateStatus("Area Sekolah Terdeteksi ✅" + labelLokasi, "ready");
+        const box = document.getElementById('status-msg');
+        if (dist <= MAX_DISTANCE) {
+            box.innerHTML = "Anda di Area Sekolah ✅<br><small>Jarak: " + Math.round(dist) + "m</small>";
+            box.className = "status-box ready";
             document.getElementById('btn-in').classList.add('active');
             document.getElementById('btn-out').classList.add('active');
         } else {
-            updateStatus("Di Luar Area Sekolah ❌" + labelLokasi, "error");
+            box.innerHTML = "Di Luar Jangkauan ❌<br><small>Jarak: " + Math.round(dist) + "m</small>";
+            box.className = "status-box error";
             document.getElementById('btn-in').classList.remove('active');
             document.getElementById('btn-out').classList.remove('active');
         }
     }
 
-    function calculateDistance(lat1, lon1, lat2, lon2) {
+    function getDist(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const dLat = (lat2-lat1) * Math.PI/180;
+        const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    function errorGPS(err) {
-        let pesan = "Gagal Mengambil Lokasi";
-        if(err.code == 1) pesan = "Izin Lokasi Ditolak! Cek Pengaturan Browser.";
-        if(err.code == 3) pesan = "Waktu GPS Habis. Silakan Refresh.";
-        updateStatus(pesan, "error");
-    }
-
-    function updateStatus(msg, type) {
-        const box = document.getElementById('status-msg');
-        box.innerHTML = msg;
-        box.className = "status-box " + type;
+    function handleError() {
+        document.getElementById('status-msg').innerHTML = "GPS Mati / Izin Ditolak!<br><small>Aktifkan Lokasi & Refresh</small>";
+        document.getElementById('status-msg').className = "status-box error";
     }
 
     function kirimAbsen(tipe) {
         const nama = document.getElementById('nama-guru').value;
-        const ket = document.getElementById('keterangan').value;
-        const btn = event.target;
-
-        if (!nama) return alert("Harap masukkan Nama Lengkap!");
+        if(!nama) return alert("Nama harus diisi!");
         
-        btn.innerText = "MENGIRIM...";
-        btn.style.pointerEvents = "none";
+        // GANTI DENGAN URL /EXEC ANDA
+        const url = "https://script.google.com/macros/s/AKfycbxb2-oRWe80f9rCiD3up0ZD21hld0lCBZuQZ7gb4cRGPCLpSPJINooOwhfJ_oolmxHj/exec";
 
-        const urlScript = "TEMPEL_URL_EXEC_ANDA_DI_SINI"; 
-
-        fetch(urlScript, {
+        fetch(url, {
             method: "POST",
             mode: "no-cors",
             body: JSON.stringify({
                 nama: nama,
                 tipe: tipe,
-                ket: ket,
+                ket: document.getElementById('keterangan').value,
                 lokasi: userCoords.lat + "," + userCoords.lng
             })
         }).then(() => {
-            alert("Absen " + tipe + " Berhasil Dicatat!");
+            alert("Absen " + tipe + " Berhasil!");
             location.reload();
-        }).catch(e => {
-            alert("Terjadi Kesalahan Koneksi!");
-            btn.innerText = "ABSEN " + tipe;
-            btn.style.pointerEvents = "auto";
         });
     }
 
-    window.onload = initGPS;
+    window.onload = startTracking;
 </script>
 </body>
 </html>
