@@ -32,10 +32,11 @@
     
     <div id="status-msg" class="status-box waiting">Mencari Sinyal GPS...</div>
 
-    <input type="text" id="nama-guru" placeholder="Nama Lengkap & Gelar">
-    
-    <select id="keterangan">
-        <option value="Hadir Tepat Waktu">Hadir</option>
+    <input type="text" id="nama-guru" placeholder="Nama Lengkap">
+    <select id="keterangan" onchange="recalculateLocation()">
+        <option value="Hadir">Hadir</option>
+        <option value="Dinas Luar">Dinas Luar</option>
+        <option value="Izin">Izin/Sakit</option>
     </select>
 
     <div class="btn-group">
@@ -47,9 +48,8 @@
 </div>
 
 <script>
-    // Koordinat Pas SMKN 1 Sumarorong
     const SCHOOL_COORDS = { lat: -3.1288515, lng: 119.3077882 }; 
-    const MAX_DISTANCE = 200; // Radius 200 Meter (Batas Tegas)
+    const MAX_DISTANCE = 200; 
     let userCoords = null;
 
     function startTracking() {
@@ -63,21 +63,35 @@
         }
     }
 
+    // Fungsi untuk menghitung ulang status saat dropdown diganti
+    function recalculateLocation() {
+        if (userCoords) updatePos({ coords: { latitude: userCoords.lat, longitude: userCoords.lng } });
+    }
+
     function updatePos(pos) {
         userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-        
+        const ket = document.getElementById('keterangan').value;
         const box = document.getElementById('status-msg');
+        
         const labelJarak = `<br><small>Jarak: ${Math.round(dist)}m dari Sekolah</small>`;
 
-        if (dist <= MAX_DISTANCE) {
-            box.innerHTML = "Area Sekolah Terdeteksi ✅" + labelJarak;
+        // LOGIKA KHUSUS: DINAS LUAR / IZIN mengabaikan jarak
+        if (ket !== "Hadir") {
+            box.innerHTML = `Mode ${ket} Aktif ✅${labelJarak}<br>Lokasi tetap dicatat.`;
             box.className = "status-box ready";
             toggleButtons(true);
         } else {
-            box.innerHTML = "Di Luar Jangkauan ❌" + labelJarak + "<br><small>Anda harus berada di sekolah.</small>";
-            box.className = "status-box error";
-            toggleButtons(false);
+            // Jika Hadir, cek jarak 200m
+            if (dist <= MAX_DISTANCE) {
+                box.innerHTML = "Anda di Area Sekolah ✅" + labelJarak;
+                box.className = "status-box ready";
+                toggleButtons(true);
+            } else {
+                box.innerHTML = "Di Luar Jangkauan ❌" + labelJarak + "<br><small>Gunakan opsi Izin jika tidak di sekolah</small>";
+                box.className = "status-box error";
+                toggleButtons(false);
+            }
         }
     }
 
@@ -102,13 +116,13 @@
     }
 
     function handleError() {
-        document.getElementById('status-msg').innerHTML = "GPS Wajib Aktif!<br><small>Aktifkan Lokasi & Refresh Halaman</small>";
+        document.getElementById('status-msg').innerHTML = "GPS Mati / Izin Ditolak!<br><small>Aktifkan Lokasi & Refresh</small>";
         document.getElementById('status-msg').className = "status-box error";
     }
 
     function kirimAbsen(tipe) {
         const nama = document.getElementById('nama-guru').value;
-        if(!nama) return alert("Harap isi Nama Lengkap Anda!");
+        if(!nama) return alert("Nama harus diisi!");
         
         const url = "https://script.google.com/macros/s/AKfycbzp2Tlk1a_rCj4fq75KDPp56YJHvIHsSoixYbgRKijdxkaCIlP0AhzBGaHFvRJiK8nWLA/exec";
 
@@ -122,7 +136,7 @@
                 lokasi: userCoords.lat + "," + userCoords.lng
             })
         }).then(() => {
-            alert("Terima kasih, Absen " + tipe + " Berhasil!");
+            alert("Absen " + tipe + " Berhasil!");
             location.reload();
         });
     }
