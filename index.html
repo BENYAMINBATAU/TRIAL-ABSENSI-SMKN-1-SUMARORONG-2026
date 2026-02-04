@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi UPTD SMKN 1 Sumarorong</title>
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .logo { width: 80px; margin-bottom: 10px; }
+        h2 { color: var(--primary); margin: 10px 0; font-size: 1.2rem; }
+        .status-box { padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; font-weight: bold; }
+        .waiting { background: #fef9c3; color: #854d0e; }
+        .ready { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #991b1b; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn { padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; opacity: 0.5; pointer-events: none; }
+        .btn-masuk { background: var(--accent); }
+        .btn-pulang { background: var(--primary); }
+        .active { opacity: 1; pointer-events: auto; }
+        .active:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Logo_Kemdikbud.png/600px-Logo_Kemdikbud.png" class="logo" alt="Logo">
+    <h2>E-ABSEN GURU<br>SMKN 1 SUMARORONG</h2>
+    
+    <div id="status-msg" class="status-box waiting">Memeriksa Lokasi GPS...</div>
+
+    <input type="text" id="nama-guru" placeholder="Nama Lengkap & Gelar">
+    <select id="keterangan">
+        <option value="Hadir">Hadir Tepat Waktu</option>
+        <option value="Izin">Izin (Dinas Luar)</option>
+        <option value="Sakit">Sakit</option>
+    </select>
+
+    <div class="btn-group">
+        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">ABSEN DATANG</button>
+        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">ABSEN PULANG</button>
+    </div>
+    
+    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 20px;">Pastikan GPS Aktif & Berada di Area Sekolah</p>
+</div>
+
+<script>
+    const SCHOOL_COORDS = { lat: -2.96695, lng: 119.33645 }; // Koordinat SMKN 1 Sumarorong
+    const MAX_DISTANCE = 200; // Jarak maksimal dalam meter (200m)
+    let userCoords = null;
+
+    // 1. Fungsi Cek Lokasi (Wajib Pertama Kali)
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(checkLocation, showError, { enableHighAccuracy: true });
+        } else {
+            updateStatus("HP Tidak Mendukung GPS", "error");
+        }
+    }
+
+    function checkLocation(pos) {
+        userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+        
+        if (dist <= MAX_DISTANCE) {
+            updateStatus("Anda Berada di Lokasi Sekolah ✅", "ready");
+            document.getElementById('btn-in').classList.add('active');
+            document.getElementById('btn-out').classList.add('active');
+        } else {
+            updateStatus(`Di Luar Jarak Sekolah (${Math.round(dist)}m) ❌`, "error");
+            document.getElementById('btn-in').classList.remove('active');
+            document.getElementById('btn-out').classList.remove('active');
+        }
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Radius bumi dalam meter
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function updateStatus(msg, type) {
+        const box = document.getElementById('status-msg');
+        box.innerText = msg;
+        box.className = "status-box " + type;
+    }
+
+    function showError(error) {
+        updateStatus("GPS Wajib Aktif untuk Absen!", "error");
+    }
+
+    function kirimAbsen(tipe) {
+        const nama = document.getElementById('nama-guru').value;
+        const ket = document.getElementById('keterangan').value;
+        if (!nama) return alert("Isi Nama Anda!");
+
+        const url = "URL_WEB_APP_GOOGLE_SCRIPT_ANDA"; // Masukkan URL Apps Script di sini
+
+        fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({
+                nama: nama,
+                tipe: tipe,
+                ket: ket,
+                lokasi: userCoords.lat + "," + userCoords.lng
+            })
+        }).then(() => {
+            alert("Absen " + tipe + " Berhasil Dicatat!");
+            location.reload();
+        });
+    }
+
+    window.onload = getLocation;
+</script>
+</body>
+</html>
