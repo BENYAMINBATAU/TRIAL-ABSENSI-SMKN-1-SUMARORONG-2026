@@ -87,10 +87,15 @@ const MAX_DISTANCE = 400; // Toleransi diperluas ke 400 meter
     }
 
     function updateStatus(msg, type) {
-        const box = document.getElementById('status-msg');
+    const box = document.getElementById('status-msg');
+    // Tambahkan info koordinat HP agar guru tahu GPS-nya sedang membaca di mana
+    if (userCoords) {
+        box.innerHTML = msg + `<br><small>Posisi Anda: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}</small>`;
+    } else {
         box.innerText = msg;
-        box.className = "status-box " + type;
     }
+    box.className = "status-box " + type;
+}
 
     function showError(error) {
         updateStatus("GPS Wajib Aktif untuk Absen!", "error");
@@ -136,4 +141,5 @@ const MAX_DISTANCE = 400; // Toleransi diperluas ke 400 meter
 </body>
 
 </html>
+
 
