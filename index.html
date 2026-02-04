@@ -10,7 +10,7 @@
         .card { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         .logo { width: 80px; margin-bottom: 10px; }
         h2 { color: var(--primary); margin: 10px 0; font-size: 1.2rem; }
-        .status-box { padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; font-weight: bold; }
+        .status-box { padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
         .waiting { background: #fef9c3; color: #854d0e; }
         .ready { background: #dcfce7; color: #166534; }
         .error { background: #fee2e2; color: #991b1b; }
@@ -20,16 +20,16 @@
         .btn-masuk { background: var(--accent); }
         .btn-pulang { background: var(--primary); }
         .active { opacity: 1; pointer-events: auto; }
-        .active:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .active:hover { transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Logo_Kemdikbud.png/600px-Logo_Kemdikbud.png" class="logo" alt="Logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo" alt="Logo">
     <h2>E-ABSEN GURU<br>SMKN 1 SUMARORONG</h2>
     
-    <div id="status-msg" class="status-box waiting">Memeriksa Lokasi GPS...</div>
+    <div id="status-msg" class="status-box waiting" onclick="location.reload()">Memeriksa Lokasi GPS...<br><small>Klik untuk segarkan</small></div>
 
     <input type="text" id="nama-guru" placeholder="Nama Lengkap & Gelar">
     <select id="keterangan">
@@ -43,49 +43,46 @@
         <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">ABSEN PULANG</button>
     </div>
     
-    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 20px;">Pastikan GPS Aktif & Berada di Area Sekolah</p>
+    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 20px;">Dusun Pasir Putih, Desa Rantekamase</p>
 </div>
 
 <script>
-    // Ganti bagian ini di kode HTML Anda
-const SCHOOL_COORDS = { lat: -2.96492, lng: 119.33644 }; 
-const MAX_DISTANCE = 1000; // Kita beri toleransi 1000 meter karena daerah pegunungan
+    // KOORDINAT DISESUAIKAN DENGAN PEMBACAAN HP ANDA
+    const SCHOOL_COORDS = { lat: -3.13093, lng: 119.30720 }; 
+    const MAX_DISTANCE = 500; // Toleransi 500 meter
     let userCoords = null;
 
-    // 1. Fungsi Cek Lokasi (Wajib Pertama Kali)
     function getLocation() {
         if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(checkLocation, showError, { enableHighAccuracy: true });
+            navigator.geolocation.watchPosition(checkLocation, showError, { 
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
         } else {
             updateStatus("HP Tidak Mendukung GPS", "error");
         }
     }
-// Tambahkan di HTML Anda agar status bisa diklik untuk hitung ulang
-function updateStatus(msg, type) {
-    const box = document.getElementById('status-msg');
-    box.innerHTML = msg + `<br><small>Klik di sini untuk segarkan posisi</small>`;
-    box.className = "status-box " + type;
-    box.onclick = () => { location.reload(); }; // Klik status untuk refresh
-}
-    function checkLocation(pos) {
-    userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-    const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-    
-    // Tampilkan koordinat asli HP di bawah status untuk memudahkan admin
-    const infoLokasi = `<br><small>GPS HP: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}</small>`;
 
-    if (dist <= MAX_DISTANCE) {
-        updateStatus("Anda Berada di Lokasi Sekolah ✅" + infoLokasi, "ready");
-        document.getElementById('btn-in').classList.add('active');
-        document.getElementById('btn-out').classList.add('active');
-    } else {
-        updateStatus(`Di Luar Jarak Sekolah (${Math.round(dist)}m) ❌` + infoLokasi, "error");
-        document.getElementById('btn-in').classList.remove('active');
-        document.getElementById('btn-out').classList.remove('active');
+    function checkLocation(pos) {
+        userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+        
+        const infoLokasi = `<br><small>GPS: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)} (${Math.round(dist)}m)</small>`;
+
+        if (dist <= MAX_DISTANCE) {
+            updateStatus("Anda Berada di Lokasi Sekolah ✅" + infoLokasi, "ready");
+            document.getElementById('btn-in').classList.add('active');
+            document.getElementById('btn-out').classList.add('active');
+        } else {
+            updateStatus(`Di Luar Jarak Sekolah ❌` + infoLokasi, "error");
+            document.getElementById('btn-in').classList.remove('active');
+            document.getElementById('btn-out').classList.remove('active');
+        }
     }
-}
+
     function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Radius bumi dalam meter
+        const R = 6371e3; 
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -95,62 +92,38 @@ function updateStatus(msg, type) {
     }
 
     function updateStatus(msg, type) {
-    const box = document.getElementById('status-msg');
-    // Tambahkan info koordinat HP agar guru tahu GPS-nya sedang membaca di mana
-    if (userCoords) {
-        box.innerHTML = msg + `<br><small>Posisi Anda: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}</small>`;
-    } else {
-        box.innerText = msg;
+        const box = document.getElementById('status-msg');
+        box.innerHTML = msg;
+        box.className = "status-box " + type;
     }
-    box.className = "status-box " + type;
-}
 
     function showError(error) {
-        updateStatus("GPS Wajib Aktif untuk Absen!", "error");
+        updateStatus("GPS Wajib Aktif & Izinkan Lokasi!", "error");
     }
 
     function kirimAbsen(tipe) {
-    const nama = document.getElementById('nama-guru').value;
-    const ket = document.getElementById('keterangan').value;
-    
-    if (!nama) {
-        alert("Harap masukkan Nama Lengkap Anda!");
-        return;
+        const nama = document.getElementById('nama-guru').value;
+        const ket = document.getElementById('keterangan').value;
+        if (!nama) return alert("Isi Nama Anda!");
+
+        const url = "https://script.google.com/macros/s/AKfycbxb2-oRWe80f9rCiD3up0ZD21hld0lCBZuQZ7gb4cRGPCLpSPJINooOwhfJ_oolmxHj/exec";
+
+        fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({
+                nama: nama,
+                tipe: tipe,
+                ket: ket,
+                lokasi: userCoords.lat + "," + userCoords.lng
+            })
+        }).then(() => {
+            alert("Absen " + tipe + " Berhasil!");
+            location.reload();
+        }).catch(err => alert("Gagal kirim data!"));
     }
 
-    // URL WEB APP ANDA YANG BARU
-    const url = "https://script.google.com/macros/s/AKfycbxb2-oRWe80f9rCiD3up0ZD21hld0lCBZuQZ7gb4cRGPCLpSPJINooOwhfJ_oolmxHj/exec";
-
-    fetch(url, {
-        method: "POST",
-        mode: "no-cors",
-        cache: "no-cache",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            nama: nama,
-            tipe: tipe,
-            ket: ket,
-            lokasi: userCoords.lat + "," + userCoords.lng
-        })
-    })
-    .then(() => {
-        alert("Terima Kasih, Absen " + tipe + " Anda Berhasil Dicatat!");
-        location.reload();
-    })
-    .catch((err) => {
-        alert("Gagal mengirim data. Pastikan internet stabil.");
-        console.error(err);
-    });
-}
     window.onload = getLocation;
 </script>
 </body>
-
 </html>
-
-
-
-
-
