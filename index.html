@@ -33,7 +33,7 @@
     <div id="status-msg" class="status-box waiting">Mencari Sinyal GPS...</div>
 
     <input type="text" id="nama-guru" placeholder="Nama Lengkap">
-    <select id="keterangan">
+    <select id="keterangan" onchange="recalculateLocation()">
         <option value="Hadir">Hadir</option>
         <option value="Dinas Luar">Dinas Luar</option>
         <option value="Izin">Izin/Sakit</option>
@@ -54,7 +54,6 @@
 
     function startTracking() {
         if (navigator.geolocation) {
-            // Menggunakan watchPosition agar GPS terus diperbarui
             navigator.geolocation.watchPosition(updatePos, handleError, {
                 enableHighAccuracy: true,
                 maximumAge: 0
@@ -64,21 +63,47 @@
         }
     }
 
+    // Fungsi untuk menghitung ulang status saat dropdown diganti
+    function recalculateLocation() {
+        if (userCoords) updatePos({ coords: { latitude: userCoords.lat, longitude: userCoords.lng } });
+    }
+
     function updatePos(pos) {
         userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-        
+        const ket = document.getElementById('keterangan').value;
         const box = document.getElementById('status-msg');
-        if (dist <= MAX_DISTANCE) {
-            box.innerHTML = "Anda di Area Sekolah ✅<br><small>Jarak: " + Math.round(dist) + "m</small>";
+        
+        const labelJarak = `<br><small>Jarak: ${Math.round(dist)}m dari Sekolah</small>`;
+
+        // LOGIKA KHUSUS: DINAS LUAR / IZIN mengabaikan jarak
+        if (ket !== "Hadir") {
+            box.innerHTML = `Mode ${ket} Aktif ✅${labelJarak}<br>Lokasi tetap dicatat.`;
             box.className = "status-box ready";
-            document.getElementById('btn-in').classList.add('active');
-            document.getElementById('btn-out').classList.add('active');
+            toggleButtons(true);
         } else {
-            box.innerHTML = "Di Luar Jangkauan ❌<br><small>Jarak: " + Math.round(dist) + "m</small>";
-            box.className = "status-box error";
-            document.getElementById('btn-in').classList.remove('active');
-            document.getElementById('btn-out').classList.remove('active');
+            // Jika Hadir, cek jarak 200m
+            if (dist <= MAX_DISTANCE) {
+                box.innerHTML = "Anda di Area Sekolah ✅" + labelJarak;
+                box.className = "status-box ready";
+                toggleButtons(true);
+            } else {
+                box.innerHTML = "Di Luar Jangkauan ❌" + labelJarak + "<br><small>Gunakan opsi Izin jika tidak di sekolah</small>";
+                box.className = "status-box error";
+                toggleButtons(false);
+            }
+        }
+    }
+
+    function toggleButtons(active) {
+        const b1 = document.getElementById('btn-in');
+        const b2 = document.getElementById('btn-out');
+        if (active) {
+            b1.classList.add('active');
+            b2.classList.add('active');
+        } else {
+            b1.classList.remove('active');
+            b2.classList.remove('active');
         }
     }
 
@@ -99,7 +124,6 @@
         const nama = document.getElementById('nama-guru').value;
         if(!nama) return alert("Nama harus diisi!");
         
-        // GANTI DENGAN URL /EXEC ANDA
         const url = "https://script.google.com/macros/s/AKfycbzp2Tlk1a_rCj4fq75KDPp56YJHvIHsSoixYbgRKijdxkaCIlP0AhzBGaHFvRJiK8nWLA/exec";
 
         fetch(url, {
@@ -121,8 +145,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
