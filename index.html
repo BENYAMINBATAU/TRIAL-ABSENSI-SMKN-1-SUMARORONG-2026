@@ -49,7 +49,7 @@
 <script>
     // Ganti bagian ini di kode HTML Anda
 const SCHOOL_COORDS = { lat: -2.96492, lng: 119.33644 }; 
-const MAX_DISTANCE = 900; // Kita beri toleransi 900 meter karena daerah pegunungan
+const MAX_DISTANCE = 1000; // Kita beri toleransi 1000 meter karena daerah pegunungan
     let userCoords = null;
 
     // 1. Fungsi Cek Lokasi (Wajib Pertama Kali)
@@ -60,7 +60,13 @@ const MAX_DISTANCE = 900; // Kita beri toleransi 900 meter karena daerah pegunun
             updateStatus("HP Tidak Mendukung GPS", "error");
         }
     }
-
+// Tambahkan di HTML Anda agar status bisa diklik untuk hitung ulang
+function updateStatus(msg, type) {
+    const box = document.getElementById('status-msg');
+    box.innerHTML = msg + `<br><small>Klik di sini untuk segarkan posisi</small>`;
+    box.className = "status-box " + type;
+    box.onclick = () => { location.reload(); }; // Klik status untuk refresh
+}
     function checkLocation(pos) {
     userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
@@ -143,6 +149,7 @@ const MAX_DISTANCE = 900; // Kita beri toleransi 900 meter karena daerah pegunun
 </body>
 
 </html>
+
 
 
 
