@@ -96,28 +96,42 @@
     }
 
     function kirimAbsen(tipe) {
-        const nama = document.getElementById('nama-guru').value;
-        const ket = document.getElementById('keterangan').value;
-        if (!nama) return alert("Isi Nama Anda!");
-
-        const url = "URL_WEB_APP_GOOGLE_SCRIPT_ANDA"; // Masukkan URL Apps Script di sini
-
-        fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            body: JSON.stringify({
-                nama: nama,
-                tipe: tipe,
-                ket: ket,
-                lokasi: userCoords.lat + "," + userCoords.lng
-            })
-        }).then(() => {
-            alert("Absen " + tipe + " Berhasil Dicatat!");
-            location.reload();
-        });
+    const nama = document.getElementById('nama-guru').value;
+    const ket = document.getElementById('keterangan').value;
+    
+    if (!nama) {
+        alert("Harap masukkan Nama Lengkap Anda!");
+        return;
     }
 
+    // URL WEB APP ANDA YANG BARU
+    const url = "https://script.google.com/macros/s/AKfycbxb2-oRWe80f9rCiD3up0ZD21hld0lCBZuQZ7gb4cRGPCLpSPJINooOwhfJ_oolmxHj/exec";
+
+    fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        cache: "no-cache",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nama: nama,
+            tipe: tipe,
+            ket: ket,
+            lokasi: userCoords.lat + "," + userCoords.lng
+        })
+    })
+    .then(() => {
+        alert("Terima Kasih, Absen " + tipe + " Anda Berhasil Dicatat!");
+        location.reload();
+    })
+    .catch((err) => {
+        alert("Gagal mengirim data. Pastikan internet stabil.");
+        console.error(err);
+    });
+}
     window.onload = getLocation;
 </script>
 </body>
+
 </html>
