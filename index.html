@@ -48,8 +48,8 @@
 
 <script>
     // Ganti bagian ini di kode HTML Anda
-const SCHOOL_COORDS = { lat: -2.966384, lng: 119.336427 }; // Titik lebih presisi
-const MAX_DISTANCE = 400; // Toleransi diperluas ke 400 meter
+const SCHOOL_COORDS = { lat: -2.96492, lng: 119.33644 }; 
+const MAX_DISTANCE = 500; // Kita beri toleransi 500 meter karena daerah pegunungan
     let userCoords = null;
 
     // 1. Fungsi Cek Lokasi (Wajib Pertama Kali)
@@ -62,20 +62,22 @@ const MAX_DISTANCE = 400; // Toleransi diperluas ke 400 meter
     }
 
     function checkLocation(pos) {
-        userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-        
-        if (dist <= MAX_DISTANCE) {
-            updateStatus("Anda Berada di Lokasi Sekolah ✅", "ready");
-            document.getElementById('btn-in').classList.add('active');
-            document.getElementById('btn-out').classList.add('active');
-        } else {
-            updateStatus(`Di Luar Jarak Sekolah (${Math.round(dist)}m) ❌`, "error");
-            document.getElementById('btn-in').classList.remove('active');
-            document.getElementById('btn-out').classList.remove('active');
-        }
-    }
+    userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    const dist = getDistance(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+    
+    // Tampilkan koordinat asli HP di bawah status untuk memudahkan admin
+    const infoLokasi = `<br><small>GPS HP: ${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}</small>`;
 
+    if (dist <= MAX_DISTANCE) {
+        updateStatus("Anda Berada di Lokasi Sekolah ✅" + infoLokasi, "ready");
+        document.getElementById('btn-in').classList.add('active');
+        document.getElementById('btn-out').classList.add('active');
+    } else {
+        updateStatus(`Di Luar Jarak Sekolah (${Math.round(dist)}m) ❌` + infoLokasi, "error");
+        document.getElementById('btn-in').classList.remove('active');
+        document.getElementById('btn-out').classList.remove('active');
+    }
+}
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371e3; // Radius bumi dalam meter
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -141,5 +143,6 @@ const MAX_DISTANCE = 400; // Toleransi diperluas ke 400 meter
 </body>
 
 </html>
+
 
 
