@@ -5,159 +5,844 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Absen UPTD SMKN 1 Sumarorong</title>
     <style>
-        :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; --danger: #dc2626; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
-        .logo { width: 80px; margin-bottom: 10px; }
-        h2 { color: var(--primary); margin: 5px 0; font-size: 1.2rem; }
-        .status-box { padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.85rem; font-weight: 600; transition: 0.3s; line-height: 1.4; }
-        .waiting { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
-        .ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; text-align: center; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn { padding: 16px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; opacity: 0.2; pointer-events: none; transition: 0.3s; font-size: 0.9rem; }
-        .active { opacity: 1 !important; pointer-events: auto !important; transform: scale(1); }
-        .btn-masuk { background: var(--accent); }
-        .btn-pulang { background: var(--primary); }
-        .footer { font-size: 0.7rem; color: #94a3b8; margin-top: 20px; }
-        .jam-digital { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 10px; }
+        :root { 
+            --primary: #0f172a; 
+            --accent: #2563eb; 
+            --success: #16a34a; 
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0;
+            padding: 15px;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .card { 
+            background: white; 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 35px; 
+            border-radius: 30px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo { 
+            width: 90px; 
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+        }
+        
+        h2 { 
+            color: var(--primary); 
+            margin: 8px 0; 
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            margin: 0; 
+            font-size: 0.95rem; 
+            color: #64748b; 
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .jam-digital { 
+            font-size: 2rem; 
+            font-weight: 800; 
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+        
+        .tanggal {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status-box { 
+            padding: 18px; 
+            border-radius: 18px; 
+            margin: 20px 0; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            transition: all 0.3s ease;
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .status-box:hover::before {
+            left: 100%;
+        }
+        
+        .waiting { 
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e; 
+            border: 2px solid #fbbf24;
+        }
+        
+        .ready { 
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46; 
+            border: 2px solid #10b981;
+        }
+        
+        .error { 
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b; 
+            border: 2px solid #ef4444;
+        }
+        
+        .input-group {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+            transition: 0.3s;
+            background: white;
+            padding: 0 5px;
+        }
+        
+        input { 
+            width: 100%; 
+            padding: 16px 15px; 
+            margin: 8px 0; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 14px; 
+            font-size: 1rem; 
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        input:focus { 
+            outline: none; 
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+        
+        input:focus + label,
+        input:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+        
+        .btn-group { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            margin-top: 20px; 
+        }
+        
+        .btn { 
+            padding: 18px; 
+            border: none; 
+            border-radius: 14px; 
+            color: white; 
+            font-weight: 700; 
+            cursor: pointer; 
+            opacity: 0.3; 
+            pointer-events: none; 
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .active { 
+            opacity: 1 !important; 
+            pointer-events: auto !important; 
+            transform: scale(1);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+        }
+        
+        .active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.3);
+        }
+        
+        .active:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-masuk { 
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .btn-pulang { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        
+        .info-absen { 
+            font-size: 0.8rem; 
+            margin-top: 20px; 
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+        }
+        
+        .info-item.success { color: var(--success); }
+        .info-item.pending { color: #94a3b8; }
+        
+        .gps-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .gps-card {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .gps-card .label {
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .gps-card .value {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        
+        .footer { 
+            font-size: 0.7rem; 
+            color: #94a3b8; 
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 14px;
+            text-align: left;
+        }
+        
+        .history-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .history-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--accent);
+        }
+        
+        @media (max-width: 480px) {
+            .card { padding: 25px; }
+            .jam-digital { font-size: 1.8rem; }
+            h2 { font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo" alt="Logo Tut Wuri Handayani">
     <h2>ABSENSI DIGITAL</h2>
-    <p style="margin:0; font-size: 0.9rem; color: #64748b; margin-bottom:10px;">SMKN 1 SUMARORONG</p>
+    <p class="subtitle">UPTD SMKN 1 SUMARORONG</p>
     
     <div id="clock" class="jam-digital">00:00:00</div>
-    <div id="status-msg" class="status-box waiting">Memulai Sistem GPS...</div>
+    <div id="date" class="tanggal">Loading...</div>
+    
+    <div id="status-msg" class="status-box waiting">
+        <span class="loading-spinner"></span>Memulai Sistem GPS...
+    </div>
 
-    <input type="text" id="nama-guru" placeholder="Ketik Nama Lengkap">
+    <div class="gps-info" id="gps-info" style="display: none;">
+        <div class="gps-card">
+            <div class="label">Akurasi GPS</div>
+            <div class="value" id="accuracy">---</div>
+        </div>
+        <div class="gps-card">
+            <div class="label">Jarak</div>
+            <div class="value" id="distance">---</div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="nama-guru" placeholder=" " autocomplete="name" required>
+        <label>Nama Lengkap</label>
+    </div>
 
     <div class="btn-group">
-        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">ABSEN PAGI</button>
-        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">ABSEN SORE</button>
+        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">
+            ⏰ Absen Pagi
+        </button>
+        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">
+            🏠 Absen Sore
+        </button>
     </div>
     
-    <div id="info-absen" style="font-size: 0.75rem; margin-top: 15px; color: #64748b;"></div>
-    <div class="footer">Dusun Pasir Putih, Desa Rantekamase</div>
+    <div class="info-absen" id="info-absen">
+        <div class="info-item pending">
+            <span>📋</span>
+            <span>Pagi: Belum</span>
+        </div>
+        <div class="info-item pending">
+            <span>📋</span>
+            <span>Sore: Belum</span>
+        </div>
+    </div>
+
+    <div class="history-section" id="history-section" style="display: none;">
+        <div class="history-title">📊 Riwayat Hari Ini</div>
+        <div id="history-list"></div>
+    </div>
+    
+    <div class="footer">
+        <strong>UPTD SMKN 1 Sumarorong</strong><br>
+        Dusun Pasir Putih, Desa Rantekamase<br>
+        Kec. Sumarorong, Kab. Mamasa, Sulawesi Barat
+    </div>
 </div>
 
 <script>
-    const SCHOOL_COORDS = { lat: -3.1288515, lng: 119.3077882 }; 
-    const MAX_DISTANCE = 200; 
-    let userCoords = null;
+    const CONFIG = {
+        SCHOOL_COORDS: { lat: -3.1288515, lng: 119.3077882 },
+        MAX_DISTANCE: 200, // meter
+        PAGI_START: 7.0,   // 07:00
+        PAGI_END: 8.5,     // 08:30
+        SORE_START: 15.0,  // 15:00
+        SORE_END: 16.0,    // 16:00
+        UPDATE_INTERVAL: 1000,
+        GPS_HIGH_ACCURACY: true,
+        GPS_TIMEOUT: 30000,
+        GPS_MAX_AGE: 0
+    };
 
-    // Sinkronisasi Jam & Logika Tombol
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzp2Tlk1a_rCj4fq75KDPp56YJHvIHsSoixYbgRKijdxkaCIlP0AhzBGaHFvRJiK8nWLA/exec";
+
+    let userCoords = null;
+    let gpsAccuracy = null;
+    let watchId = null;
+    let isSubmitting = false;
+
+    // Utility: Haversine Distance Formula
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Earth radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c; // Distance in meters
+    }
+
+    // Update Clock & Date
     function updateClock() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
-        document.getElementById('clock').innerText = timeStr + " WITA";
+        const timeStr = now.toLocaleTimeString('id-ID', { 
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        const dateStr = now.toLocaleDateString('id-ID', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        document.getElementById('clock').innerText = timeStr;
+        document.getElementById('date').innerText = dateStr;
 
+        updateButtonStates();
+    }
+
+    // Update Button States based on Time & Location
+    function updateButtonStates() {
+        const now = new Date();
         const hour = now.getHours();
         const min = now.getMinutes();
         const currentTime = hour + (min / 60);
 
-        const isPagi = currentTime >= 7.0 && currentTime <= 8.5; // 07:00 - 08:30
-        const isSore = currentTime >= 15.0 && currentTime <= 16.0; // 15:00 - 16:00
+        const isPagiTime = currentTime >= CONFIG.PAGI_START && currentTime <= CONFIG.PAGI_END;
+        const isSoreTime = currentTime >= CONFIG.SORE_START && currentTime <= CONFIG.SORE_END;
 
-        const today = new Date().toDateString();
+        const today = getToday();
         const sudahPagi = localStorage.getItem('absen_pagi_' + today);
         const sudahSore = localStorage.getItem('absen_sore_' + today);
 
-        const bIn = document.getElementById('btn-in');
-        const bOut = document.getElementById('btn-out');
+        const btnIn = document.getElementById('btn-in');
+        const btnOut = document.getElementById('btn-out');
 
-        // Reset tombol
-        bIn.classList.remove('active');
-        bOut.classList.remove('active');
+        // Reset states
+        btnIn.classList.remove('active');
+        btnOut.classList.remove('active');
 
-        if (userCoords) {
-            const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-            if (dist <= MAX_DISTANCE) {
-                // Logika Tombol Pagi
-                if (isPagi && !sudahPagi) bIn.classList.add('active');
-                // Logika Tombol Sore
-                if (isSore && !sudahSore) bOut.classList.add('active');
+        // Check location validity
+        if (userCoords && gpsAccuracy !== null) {
+            const dist = calculateDistance(
+                userCoords.lat, userCoords.lng, 
+                CONFIG.SCHOOL_COORDS.lat, CONFIG.SCHOOL_COORDS.lng
+            );
+            
+            const isInRange = dist <= CONFIG.MAX_DISTANCE;
+            const isAccurate = gpsAccuracy <= 50; // GPS accuracy < 50 meters
+
+            if (isInRange && isAccurate) {
+                // Enable Pagi button
+                if (isPagiTime && !sudahPagi) {
+                    btnIn.classList.add('active');
+                }
+                // Enable Sore button
+                if (isSoreTime && !sudahSore) {
+                    btnOut.classList.add('active');
+                }
             }
         }
 
-        // Tampilkan info status absen di HP
-        document.getElementById('info-absen').innerHTML = 
-            (sudahPagi ? "✅ Pagi Terabsen" : "❌ Belum Absen Pagi") + " | " + 
-            (sudahSore ? "✅ Sore Terabsen" : "❌ Belum Absen Sore");
+        // Update info display
+        updateInfoDisplay(sudahPagi, sudahSore);
+        updateHistory();
     }
 
-    function startTracking() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(updatePos, handleError, {
-                enableHighAccuracy: true,
-                maximumAge: 0
-            });
-        } else {
-            alert("HP tidak mendukung GPS");
-        }
-        setInterval(updateClock, 1000);
-    }
-
-    function updatePos(pos) {
-        userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-        const box = document.getElementById('status-msg');
+    // Update Info Display
+    function updateInfoDisplay(sudahPagi, sudahSore) {
+        const infoAbsen = document.getElementById('info-absen');
         
-        if (dist <= MAX_DISTANCE) {
-            box.innerHTML = `Lokasi Sesuai ✅<br><small>Jarak: ${Math.round(dist)}m dari Sekolah</small>`;
-            box.className = "status-box ready";
-        } else {
-            box.innerHTML = `Di Luar Jangkauan ❌<br><small>Jarak: ${Math.round(dist)}m. Harus masuk area sekolah.</small>`;
-            box.className = "status-box error";
+        const pagiHTML = sudahPagi 
+            ? '<div class="info-item success"><span>✅</span><span>Pagi: Terabsen</span></div>'
+            : '<div class="info-item pending"><span>⏳</span><span>Pagi: Belum</span></div>';
+            
+        const soreHTML = sudahSore 
+            ? '<div class="info-item success"><span>✅</span><span>Sore: Terabsen</span></div>'
+            : '<div class="info-item pending"><span>⏳</span><span>Sore: Belum</span></div>';
+        
+        infoAbsen.innerHTML = pagiHTML + soreHTML;
+    }
+
+    // Update History
+    function updateHistory() {
+        const today = getToday();
+        const pagiData = localStorage.getItem('absen_pagi_' + today);
+        const soreData = localStorage.getItem('absen_sore_' + today);
+        
+        if (pagiData || soreData) {
+            const historySection = document.getElementById('history-section');
+            const historyList = document.getElementById('history-list');
+            historySection.style.display = 'block';
+            
+            let html = '';
+            if (pagiData) {
+                const data = JSON.parse(pagiData);
+                html += `
+                    <div class="history-item">
+                        <div>
+                            <strong>Absen Pagi</strong><br>
+                            <small style="color: #64748b;">${data.time}</small>
+                        </div>
+                        <span class="badge badge-success">✓</span>
+                    </div>
+                `;
+            }
+            if (soreData) {
+                const data = JSON.parse(soreData);
+                html += `
+                    <div class="history-item">
+                        <div>
+                            <strong>Absen Sore</strong><br>
+                            <small style="color: #64748b;">${data.time}</small>
+                        </div>
+                        <span class="badge badge-success">✓</span>
+                    </div>
+                `;
+            }
+            historyList.innerHTML = html;
         }
     }
 
-    function getDist(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const dLat = (lat2-lat1) * Math.PI/180;
-        const dLon = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    // Get Today's Key
+    function getToday() {
+        return new Date().toISOString().split('T')[0];
     }
 
-    function handleError() {
-        document.getElementById('status-msg').innerHTML = "Akses GPS Ditolak!<br><small>Wajib aktifkan GPS & Izin Lokasi.</small>";
-        document.getElementById('status-msg').className = "status-box error";
+    // Start GPS Tracking
+    function startTracking() {
+        if (!navigator.geolocation) {
+            showError("Perangkat tidak mendukung GPS");
+            return;
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+            handlePositionSuccess,
+            handlePositionError,
+            {
+                enableHighAccuracy: CONFIG.GPS_HIGH_ACCURACY,
+                timeout: CONFIG.GPS_TIMEOUT,
+                maximumAge: CONFIG.GPS_MAX_AGE
+            }
+        );
+
+        // Start clock
+        setInterval(updateClock, CONFIG.UPDATE_INTERVAL);
+        updateClock();
     }
 
-    function kirimAbsen(tipe) {
-        const nama = document.getElementById('nama-guru').value;
-        if(!nama) return alert("Ketik Nama Lengkap Anda!");
+    // Handle GPS Success
+    function handlePositionSuccess(position) {
+        userCoords = { 
+            lat: position.coords.latitude, 
+            lng: position.coords.longitude 
+        };
+        gpsAccuracy = position.coords.accuracy;
 
-        const today = new Date().toDateString();
-        const url = "https://script.google.com/macros/s/AKfycbzp2Tlk1a_rCj4fq75KDPp56YJHvIHsSoixYbgRKijdxkaCIlP0AhzBGaHFvRJiK8nWLA/exec";
+        const distance = calculateDistance(
+            userCoords.lat, userCoords.lng,
+            CONFIG.SCHOOL_COORDS.lat, CONFIG.SCHOOL_COORDS.lng
+        );
 
-        if(confirm(`Kirim Absen ${tipe} sekarang?`)) {
-            fetch(url, {
+        const statusBox = document.getElementById('status-msg');
+        const gpsInfo = document.getElementById('gps-info');
+        
+        gpsInfo.style.display = 'grid';
+        document.getElementById('accuracy').innerText = Math.round(gpsAccuracy) + ' m';
+        document.getElementById('distance').innerText = Math.round(distance) + ' m';
+
+        if (distance <= CONFIG.MAX_DISTANCE && gpsAccuracy <= 50) {
+            statusBox.innerHTML = `
+                ✅ <strong>Lokasi Valid</strong><br>
+                <small>Anda berada di area sekolah</small>
+            `;
+            statusBox.className = "status-box ready";
+        } else if (distance > CONFIG.MAX_DISTANCE) {
+            statusBox.innerHTML = `
+                ❌ <strong>Di Luar Jangkauan</strong><br>
+                <small>Jarak ${Math.round(distance)}m. Maksimal ${CONFIG.MAX_DISTANCE}m dari sekolah</small>
+            `;
+            statusBox.className = "status-box error";
+        } else {
+            statusBox.innerHTML = `
+                ⚠️ <strong>GPS Kurang Akurat</strong><br>
+                <small>Akurasi ${Math.round(gpsAccuracy)}m. Cari sinyal lebih baik</small>
+            `;
+            statusBox.className = "status-box waiting";
+        }
+
+        updateButtonStates();
+    }
+
+    // Handle GPS Error
+    function handlePositionError(error) {
+        let message = "Error GPS tidak diketahui";
+        
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                message = "❌ <strong>Akses GPS Ditolak</strong><br><small>Aktifkan izin lokasi di pengaturan browser</small>";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                message = "⚠️ <strong>Posisi Tidak Tersedia</strong><br><small>Periksa koneksi GPS/Internet</small>";
+                break;
+            case error.TIMEOUT:
+                message = "⏱️ <strong>GPS Timeout</strong><br><small>Sinyal GPS lemah, coba di luar ruangan</small>";
+                break;
+        }
+        
+        showError(message);
+    }
+
+    // Show Error
+    function showError(message) {
+        const statusBox = document.getElementById('status-msg');
+        statusBox.innerHTML = message;
+        statusBox.className = "status-box error";
+    }
+
+    // Kirim Absensi
+    async function kirimAbsen(tipe) {
+        if (isSubmitting) return;
+
+        const nama = document.getElementById('nama-guru').value.trim();
+        
+        // Validation
+        if (!nama) {
+            alert("⚠️ Mohon isi nama lengkap Anda!");
+            document.getElementById('nama-guru').focus();
+            return;
+        }
+
+        if (nama.length < 3) {
+            alert("⚠️ Nama terlalu pendek!");
+            return;
+        }
+
+        if (!userCoords) {
+            alert("⚠️ GPS belum siap. Tunggu sebentar...");
+            return;
+        }
+
+        const distance = calculateDistance(
+            userCoords.lat, userCoords.lng,
+            CONFIG.SCHOOL_COORDS.lat, CONFIG.SCHOOL_COORDS.lng
+        );
+
+        if (distance > CONFIG.MAX_DISTANCE) {
+            alert(`❌ Anda terlalu jauh dari sekolah!\nJarak: ${Math.round(distance)}m\nMaksimal: ${CONFIG.MAX_DISTANCE}m`);
+            return;
+        }
+
+        if (gpsAccuracy > 50) {
+            if (!confirm(`⚠️ Akurasi GPS kurang baik (${Math.round(gpsAccuracy)}m).\n\nLanjutkan absen?`)) {
+                return;
+            }
+        }
+
+        const today = getToday();
+        const storageKey = `absen_${tipe.toLowerCase()}_${today}`;
+        
+        if (localStorage.getItem(storageKey)) {
+            alert(`ℹ️ Anda sudah absen ${tipe} hari ini!`);
+            return;
+        }
+
+        if (!confirm(`📝 Konfirmasi Absen ${tipe}?\n\nNama: ${nama}\nJarak: ${Math.round(distance)}m`)) {
+            return;
+        }
+
+        // Start submission
+        isSubmitting = true;
+        const btnIn = document.getElementById('btn-in');
+        const btnOut = document.getElementById('btn-out');
+        const originalText = tipe === 'DATANG' ? btnIn.innerHTML : btnOut.innerHTML;
+        
+        if (tipe === 'DATANG') {
+            btnIn.innerHTML = '<span class="loading-spinner"></span>Mengirim...';
+            btnIn.disabled = true;
+        } else {
+            btnOut.innerHTML = '<span class="loading-spinner"></span>Mengirim...';
+            btnOut.disabled = true;
+        }
+
+        try {
+            const now = new Date();
+            const payload = {
+                nama: nama,
+                tipe: tipe,
+                ket: "Hadir",
+                lokasi: `${userCoords.lat},${userCoords.lng}`,
+                jarak: Math.round(distance),
+                akurasi: Math.round(gpsAccuracy),
+                timestamp: now.toISOString(),
+                waktu: now.toLocaleString('id-ID')
+            };
+
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST",
                 mode: "no-cors",
-                body: JSON.stringify({
-                    nama: nama,
-                    tipe: tipe,
-                    ket: "Hadir",
-                    lokasi: userCoords.lat + "," + userCoords.lng
-                })
-            }).then(() => {
-                // Simpan tanda sudah absen di HP
-                if(tipe === 'DATANG') localStorage.setItem('absen_pagi_' + today, 'true');
-                if(tipe === 'PULANG') localStorage.setItem('absen_sore_' + today, 'true');
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
 
-                alert("Absen " + tipe + " Berhasil dicatat!");
+            // Save to localStorage with metadata
+            localStorage.setItem(storageKey, JSON.stringify({
+                nama: nama,
+                time: now.toLocaleTimeString('id-ID'),
+                date: today,
+                coords: userCoords,
+                distance: Math.round(distance)
+            }));
+
+            // Save last used name
+            localStorage.setItem('last_nama', nama);
+
+            alert(`✅ Absen ${tipe} berhasil!\n\nTerima kasih, ${nama}!`);
+            
+            // Reset and reload
+            setTimeout(() => {
                 location.reload();
-            }).catch(e => alert("Gagal terhubung ke server."));
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert("❌ Gagal mengirim data!\n\nPeriksa koneksi internet Anda.");
+            
+            // Restore button
+            if (tipe === 'DATANG') {
+                btnIn.innerHTML = originalText;
+                btnIn.disabled = false;
+            } else {
+                btnOut.innerHTML = originalText;
+                btnOut.disabled = false;
+            }
+        } finally {
+            isSubmitting = false;
         }
     }
 
-    window.onload = startTracking;
+    // Auto-fill last used name
+    function loadLastName() {
+        const lastName = localStorage.getItem('last_nama');
+        if (lastName) {
+            document.getElementById('nama-guru').value = lastName;
+        }
+    }
+
+    // Initialize
+    window.onload = () => {
+        startTracking();
+        loadLastName();
+        updateHistory();
+    };
+
+    // Cleanup on page unload
+    window.onbeforeunload = () => {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    };
 </script>
 </body>
 </html>
