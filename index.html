@@ -10,17 +10,18 @@
         .card { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
         .logo { width: 80px; margin-bottom: 10px; }
         h2 { color: var(--primary); margin: 5px 0; font-size: 1.2rem; }
-        .status-box { padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
+        .status-box { padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.85rem; font-weight: 600; transition: 0.3s; line-height: 1.4; }
         .waiting { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
         .ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; text-align: center; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn { padding: 16px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; opacity: 0.3; pointer-events: none; transition: 0.3s; }
-        .active { opacity: 1; pointer-events: auto; }
+        .btn { padding: 16px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; opacity: 0.2; pointer-events: none; transition: 0.3s; font-size: 0.9rem; }
+        .active { opacity: 1 !important; pointer-events: auto !important; transform: scale(1); }
         .btn-masuk { background: var(--accent); }
         .btn-pulang { background: var(--primary); }
         .footer { font-size: 0.7rem; color: #94a3b8; margin-top: 20px; }
+        .jam-digital { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -28,22 +29,19 @@
 <div class="card">
     <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_Tut_Wuri_Handayani.png" class="logo">
     <h2>ABSENSI DIGITAL</h2>
-    <p style="margin:0; font-size: 0.9rem; color: #64748b;">SMKN 1 SUMARORONG</p>
+    <p style="margin:0; font-size: 0.9rem; color: #64748b; margin-bottom:10px;">SMKN 1 SUMARORONG</p>
     
-    <div id="status-msg" class="status-box waiting">Mencari Sinyal GPS...</div>
+    <div id="clock" class="jam-digital">00:00:00</div>
+    <div id="status-msg" class="status-box waiting">Memulai Sistem GPS...</div>
 
-    <input type="text" id="nama-guru" placeholder="Nama Lengkap">
-    <select id="keterangan" onchange="recalculateLocation()">
-        <option value="Hadir">Hadir</option>
-        <option value="Dinas Luar">Dinas Luar</option>
-        <option value="Izin">Izin/Sakit</option>
-    </select>
+    <input type="text" id="nama-guru" placeholder="Ketik Nama Lengkap">
 
     <div class="btn-group">
-        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">DATANG</button>
-        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">PULANG</button>
+        <button id="btn-in" class="btn btn-masuk" onclick="kirimAbsen('DATANG')">ABSEN PAGI</button>
+        <button id="btn-out" class="btn btn-pulang" onclick="kirimAbsen('PULANG')">ABSEN SORE</button>
     </div>
     
+    <div id="info-absen" style="font-size: 0.75rem; margin-top: 15px; color: #64748b;"></div>
     <div class="footer">Dusun Pasir Putih, Desa Rantekamase</div>
 </div>
 
@@ -51,6 +49,46 @@
     const SCHOOL_COORDS = { lat: -3.1288515, lng: 119.3077882 }; 
     const MAX_DISTANCE = 200; 
     let userCoords = null;
+
+    // Sinkronisasi Jam & Logika Tombol
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+        document.getElementById('clock').innerText = timeStr + " WITA";
+
+        const hour = now.getHours();
+        const min = now.getMinutes();
+        const currentTime = hour + (min / 60);
+
+        const isPagi = currentTime >= 7.0 && currentTime <= 8.5; // 07:00 - 08:30
+        const isSore = currentTime >= 15.0 && currentTime <= 16.0; // 15:00 - 16:00
+
+        const today = new Date().toDateString();
+        const sudahPagi = localStorage.getItem('absen_pagi_' + today);
+        const sudahSore = localStorage.getItem('absen_sore_' + today);
+
+        const bIn = document.getElementById('btn-in');
+        const bOut = document.getElementById('btn-out');
+
+        // Reset tombol
+        bIn.classList.remove('active');
+        bOut.classList.remove('active');
+
+        if (userCoords) {
+            const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
+            if (dist <= MAX_DISTANCE) {
+                // Logika Tombol Pagi
+                if (isPagi && !sudahPagi) bIn.classList.add('active');
+                // Logika Tombol Sore
+                if (isSore && !sudahSore) bOut.classList.add('active');
+            }
+        }
+
+        // Tampilkan info status absen di HP
+        document.getElementById('info-absen').innerHTML = 
+            (sudahPagi ? "✅ Pagi Terabsen" : "❌ Belum Absen Pagi") + " | " + 
+            (sudahSore ? "✅ Sore Terabsen" : "❌ Belum Absen Sore");
+    }
 
     function startTracking() {
         if (navigator.geolocation) {
@@ -61,49 +99,20 @@
         } else {
             alert("HP tidak mendukung GPS");
         }
-    }
-
-    // Fungsi untuk menghitung ulang status saat dropdown diganti
-    function recalculateLocation() {
-        if (userCoords) updatePos({ coords: { latitude: userCoords.lat, longitude: userCoords.lng } });
+        setInterval(updateClock, 1000);
     }
 
     function updatePos(pos) {
         userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         const dist = getDist(userCoords.lat, userCoords.lng, SCHOOL_COORDS.lat, SCHOOL_COORDS.lng);
-        const ket = document.getElementById('keterangan').value;
         const box = document.getElementById('status-msg');
         
-        const labelJarak = `<br><small>Jarak: ${Math.round(dist)}m dari Sekolah</small>`;
-
-        // LOGIKA KHUSUS: DINAS LUAR / IZIN mengabaikan jarak
-        if (ket !== "Hadir") {
-            box.innerHTML = `Mode ${ket} Aktif ✅${labelJarak}<br>Lokasi tetap dicatat.`;
+        if (dist <= MAX_DISTANCE) {
+            box.innerHTML = `Lokasi Sesuai ✅<br><small>Jarak: ${Math.round(dist)}m dari Sekolah</small>`;
             box.className = "status-box ready";
-            toggleButtons(true);
         } else {
-            // Jika Hadir, cek jarak 200m
-            if (dist <= MAX_DISTANCE) {
-                box.innerHTML = "Anda di Area Sekolah ✅" + labelJarak;
-                box.className = "status-box ready";
-                toggleButtons(true);
-            } else {
-                box.innerHTML = "Di Luar Jangkauan ❌" + labelJarak + "<br><small>Gunakan opsi Izin jika tidak di sekolah</small>";
-                box.className = "status-box error";
-                toggleButtons(false);
-            }
-        }
-    }
-
-    function toggleButtons(active) {
-        const b1 = document.getElementById('btn-in');
-        const b2 = document.getElementById('btn-out');
-        if (active) {
-            b1.classList.add('active');
-            b2.classList.add('active');
-        } else {
-            b1.classList.remove('active');
-            b2.classList.remove('active');
+            box.innerHTML = `Di Luar Jangkauan ❌<br><small>Jarak: ${Math.round(dist)}m. Harus masuk area sekolah.</small>`;
+            box.className = "status-box error";
         }
     }
 
@@ -116,29 +125,36 @@
     }
 
     function handleError() {
-        document.getElementById('status-msg').innerHTML = "GPS Mati / Izin Ditolak!<br><small>Aktifkan Lokasi & Refresh</small>";
+        document.getElementById('status-msg').innerHTML = "Akses GPS Ditolak!<br><small>Wajib aktifkan GPS & Izin Lokasi.</small>";
         document.getElementById('status-msg').className = "status-box error";
     }
 
     function kirimAbsen(tipe) {
         const nama = document.getElementById('nama-guru').value;
-        if(!nama) return alert("Nama harus diisi!");
-        
+        if(!nama) return alert("Ketik Nama Lengkap Anda!");
+
+        const today = new Date().toDateString();
         const url = "https://script.google.com/macros/s/AKfycbzp2Tlk1a_rCj4fq75KDPp56YJHvIHsSoixYbgRKijdxkaCIlP0AhzBGaHFvRJiK8nWLA/exec";
 
-        fetch(url, {
-            method: "POST",
-            mode: "no-cors",
-            body: JSON.stringify({
-                nama: nama,
-                tipe: tipe,
-                ket: document.getElementById('keterangan').value,
-                lokasi: userCoords.lat + "," + userCoords.lng
-            })
-        }).then(() => {
-            alert("Absen " + tipe + " Berhasil!");
-            location.reload();
-        });
+        if(confirm(`Kirim Absen ${tipe} sekarang?`)) {
+            fetch(url, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({
+                    nama: nama,
+                    tipe: tipe,
+                    ket: "Hadir",
+                    lokasi: userCoords.lat + "," + userCoords.lng
+                })
+            }).then(() => {
+                // Simpan tanda sudah absen di HP
+                if(tipe === 'DATANG') localStorage.setItem('absen_pagi_' + today, 'true');
+                if(tipe === 'PULANG') localStorage.setItem('absen_sore_' + today, 'true');
+
+                alert("Absen " + tipe + " Berhasil dicatat!");
+                location.reload();
+            }).catch(e => alert("Gagal terhubung ke server."));
+        }
     }
 
     window.onload = startTracking;
